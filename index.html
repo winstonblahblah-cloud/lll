@@ -1,0 +1,1694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+    <title>Eurolynk Course Search</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"/>
+    
+    <style>
+        /* Enhanced CSS with better performance and mobile optimization */
+        .modal-content-max { 
+            max-height: min(90vh, 900px); 
+            overflow-y: auto; 
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .heart-btn { line-height: 1; }
+        .trending-pulse { 
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; 
+        }
+        .popularity-bar { 
+            height: 4px; 
+            background: linear-gradient(90deg, #ef4444 0%, #f97316 25%, #eab308 50%, #22c55e 75%, #059669 100%); 
+            border-radius: 2px; 
+        }
+        .marketing-badge { 
+            position: absolute; 
+            top: -8px; 
+            right: -8px; 
+            z-index: 5; 
+        }
+        .touch-target {
+            min-height: 44px;
+            min-width: 44px;
+        }
+        .mobile-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .mobile-card:active {
+            transform: scale(0.98);
+        }
+        .mobile-ai-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 100;
+            display: none;
+        }
+        .mobile-ai-overlay.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .mobile-ai-content {
+            background: white;
+            width: 95vw;
+            height: 80vh;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+        }
+        .lazy-load {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        .lazy-load.loaded {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        @keyframes mobileSlideUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .mobile-slide-up {
+            animation: mobileSlideUp 0.3s ease-out;
+        }
+        
+        /* Gradient animations */
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .gradient-animate {
+            background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #f5576c);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+        }
+        
+        /* Floating elements */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        .float {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        /* Performance optimizations */
+        .will-change-transform { will-change: transform; }
+        .backface-hidden { backface-visibility: hidden; }
+        
+        /* Responsive optimizations */
+        @media (max-width: 768px) {
+            .desktop-filters { display: none; }
+            .mobile-filters { display: block; }
+            .mobile-ai-toggle { display: flex !important; }
+            .desktop-ai { display: none !important; }
+            .mobile-modal { 
+                margin: 0; 
+                max-width: 100vw; 
+                height: 100vh; 
+                border-radius: 0; 
+            }
+            .mobile-grid { grid-template-columns: 1fr; gap: 1rem; }
+            .mobile-stats { grid-template-columns: repeat(2, 1fr); }
+            .text-responsive { font-size: 0.875rem; }
+            .heading-responsive { font-size: 1.25rem; }
+        }
+        @media (min-width: 769px) {
+            .mobile-filters { display: none; }
+            .desktop-filters { display: grid; }
+            .mobile-ai-toggle { display: none !important; }
+            .desktop-ai { display: flex !important; }
+            .text-responsive { font-size: 1rem; }
+            .heading-responsive { font-size: 1.5rem; }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .8; }
+        }
+        
+        /* Glassmorphism effect */
+        .glass {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        
+        /* Neon glow effect */
+        .neon-glow {
+            box-shadow: 0 0 5px #00ff88, 0 0 10px #00ff88, 0 0 15px #00ff88;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 min-h-screen">
+    <!-- Enhanced Header with mobile optimization -->
+    <header class="w-full bg-white text-black py-3 md:py-4 px-4 md:px-8 flex items-center justify-between shadow-lg border-b border-gray-200 sticky top-0 z-40">
+        <div class="flex items-center space-x-2 md:space-x-3">
+            <span class="gradient-animate text-white font-bold px-2 md:px-3 py-1 rounded text-sm md:text-base">Eurolynk</span>
+            <h1 class="heading-responsive font-bold truncate">Course Search</h1>
+        </div>
+        <div class="flex items-center space-x-2 md:space-x-4 text-xs md:text-sm">
+            <div id="resultCount" class="text-gray-600 hidden md:block font-medium"></div>
+            <div class="text-gray-600">
+                <span id="totalUsers" class="font-semibold text-green-600">2,847</span>
+                <span class="hidden md:inline"> users online</span>
+            </div>
+            <button id="mobileMenuToggle" class="md:hidden p-2 touch-target hover:bg-gray-100 rounded-lg transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- Enhanced Smart Banner with rotating insights -->
+    <div id="smartBanner" class="bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 border-b border-blue-200 py-2 md:py-3 px-4 md:px-8">
+        <div class="flex items-center justify-between max-w-6xl mx-auto">
+            <div class="flex items-center space-x-2 md:space-x-3">
+                <span class="text-2xl float">💡</span>
+                <span id="smartText" class="text-blue-800 text-xs md:text-sm font-medium">AI-powered insights loading...</span>
+            </div>
+            <button id="dismissBanner" class="text-blue-600 hover:text-blue-800 text-lg md:text-xl font-bold touch-target hover:bg-blue-100 rounded-full w-8 h-8 flex items-center justify-center transition-colors">×</button>
+        </div>
+    </div>
+
+    <!-- Mobile slide-out menu -->
+    <div id="mobileMenu" class="fixed inset-y-0 left-0 w-80 bg-white shadow-xl transform -translate-x-full transition-transform duration-300 z-50 md:hidden">
+        <div class="p-4 border-b border-gray-200 gradient-animate">
+            <div class="flex items-center justify-between">
+                <h2 class="text-lg font-semibold text-white">Filters & Options</h2>
+                <button id="closeMobileMenu" class="p-2 touch-target text-white hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div class="p-4 space-y-4 overflow-y-auto" style="height: calc(100vh - 80px);">
+            <select id="mobileFilterCountry" class="w-full p-3 rounded-lg border border-gray-300 bg-white text-gray-800 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                <option value="">Any Country</option>
+            </select>
+            <select id="mobileFilterCategory" class="w-full p-3 rounded-lg border border-gray-300 bg-white text-gray-800 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                <option value="">Any Category</option>
+            </select>
+            <select id="mobileFilterFormat" class="w-full p-3 rounded-lg border border-gray-300 bg-white text-gray-800 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                <option value="">Any Format</option>
+            </select>
+            <select id="mobileFilterPrice" class="w-full p-3 rounded-lg border border-gray-300 bg-white text-gray-800 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                <option value="">Any Price</option>
+            </select>
+            <select id="mobileSortBy" class="w-full p-3 rounded-lg border border-gray-300 bg-white text-gray-800 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                <option value="relevance">Sort: Relevance</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+                <option value="popularity">Most Popular</option>
+                <option value="trending">Trending Now</option>
+            </select>
+            <button id="mobileClearFilters" class="w-full p-3 rounded-lg bg-gradient-to-r from-red-400 to-pink-500 hover:from-red-500 hover:to-pink-600 text-white font-medium transition-all touch-target">Clear All Filters</button>
+        </div>
+    </div>
+
+    <!-- Mobile menu overlay -->
+    <div id="mobileMenuOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden md:hidden"></div>
+
+    <main class="max-w-6xl mx-auto py-4 md:py-8 px-4 md:px-6 space-y-4 md:space-y-8">
+        <!-- Enhanced Search section -->
+        <div class="space-y-4 md:space-y-6">
+            <form id="searchForm" class="flex items-center space-x-2 md:space-x-3">
+                <div class="relative flex-grow">
+                    <input id="searchInput" type="text" placeholder="Search courses, providers, locations..." class="w-full p-3 md:p-4 pl-12 rounded-lg border-2 border-gray-300 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-sm md:text-base"/>
+                    <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </div>
+                <button type="submit" class="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold px-4 md:px-6 py-3 md:py-4 rounded-lg shadow-lg transition-all touch-target text-sm md:text-base neon-glow">
+                    🔍 Search
+                </button>
+            </form>
+
+            <!-- Enhanced Quick filter chips for mobile -->
+            <div class="flex overflow-x-auto space-x-2 pb-2 md:hidden no-scrollbar">
+                <button class="quick-filter flex-shrink-0 px-3 py-1 bg-gradient-to-r from-blue-100 to-purple-100 hover:from-blue-200 hover:to-purple-200 rounded-full text-sm text-gray-700 transition-all touch-target" data-filter="medical">🏥 Medical</button>
+                <button class="quick-filter flex-shrink-0 px-3 py-1 bg-gradient-to-r from-green-100 to-blue-100 hover:from-green-200 hover:to-blue-200 rounded-full text-sm text-gray-700 transition-all touch-target" data-filter="cv">📝 CV Services</button>
+                <button class="quick-filter flex-shrink-0 px-3 py-1 bg-gradient-to-r from-yellow-100 to-orange-100 hover:from-yellow-200 hover:to-orange-200 rounded-full text-sm text-gray-700 transition-all touch-target" data-filter="language">🗣️ Languages</button>
+                <button class="quick-filter flex-shrink-0 px-3 py-1 bg-gradient-to-r from-pink-100 to-red-100 hover:from-pink-200 hover:to-red-200 rounded-full text-sm text-gray-700 transition-all touch-target" data-filter="budget">💰 Budget</button>
+                <button class="quick-filter flex-shrink-0 px-3 py-1 bg-gradient-to-r from-indigo-100 to-purple-100 hover:from-indigo-200 hover:to-purple-200 rounded-full text-sm text-gray-700 transition-all touch-target" data-filter="online">💻 Online</button>
+            </div>
+
+            <!-- Desktop filters -->
+            <div class="desktop-filters grid grid-cols-1 md:grid-cols-4 gap-4">
+                <select id="filterCountry" class="p-3 rounded-lg border border-gray-300 bg-white text-gray-800 focus:ring-2 focus:ring-purple-500 focus:border-transparent"><option value="">🌍 Country</option></select>
+                <select id="filterCategory" class="p-3 rounded-lg border border-gray-300 bg-white text-gray-800 focus:ring-2 focus:ring-purple-500 focus:border-transparent"><option value="">📚 Category</option></select>
+                <select id="filterFormat" class="p-3 rounded-lg border border-gray-300 bg-white text-gray-800 focus:ring-2 focus:ring-purple-500 focus:border-transparent"><option value="">💻 Format</option></select>
+                <select id="filterDuration" class="p-3 rounded-lg border border-gray-300 bg-white text-gray-800 focus:ring-2 focus:ring-purple-500 focus:border-transparent"><option value="">⏱️ Duration</option></select>
+                <select id="filterRating" class="p-3 rounded-lg border border-gray-300 bg-white text-gray-800 focus:ring-2 focus:ring-purple-500 focus:border-transparent"><option value="">⭐ Min Rating</option></select>
+                <select id="filterPrice" class="p-3 rounded-lg border border-gray-300 bg-white text-gray-800 focus:ring-2 focus:ring-purple-500 focus:border-transparent"><option value="">💰 Any Price</option></select>
+                <select id="sortBy" class="p-3 rounded-lg border border-gray-300 bg-white text-gray-800 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    <option value="relevance">🎯 Sort: Relevance</option>
+                    <option value="price-low">💸 Price: Low to High</option>
+                    <option value="price-high">💎 Price: High to Low</option>
+                    <option value="rating">⭐ Highest Rated</option>
+                    <option value="popularity">🔥 Most Popular</option>
+                    <option value="trending">📈 Trending Now</option>
+                </select>
+                <button id="clearFilters" class="p-3 rounded-lg border border-gray-300 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 text-gray-700 transition-all">🗑️ Clear All</button>
+            </div>
+
+            <!-- Enhanced Trending tags (desktop only) -->
+            <div id="trendingTags" class="hidden md:flex flex-wrap gap-2">
+                <span class="text-sm text-gray-600 mr-2 font-medium">🔥 Trending:</span>
+                <button class="trending-tag px-3 py-1 bg-gradient-to-r from-red-100 to-pink-100 hover:from-red-200 hover:to-pink-200 rounded-full text-sm text-gray-700 transition-all trending-pulse" data-search="medical germany">🏥 Medical in Germany</button>
+                <button class="trending-tag px-3 py-1 bg-gradient-to-r from-blue-100 to-indigo-100 hover:from-blue-200 hover:to-indigo-200 rounded-full text-sm text-gray-700 transition-all trending-pulse" data-search="cv budget">📝 Budget CV Services</button>
+                <button class="trending-tag px-3 py-1 bg-gradient-to-r from-green-100 to-teal-100 hover:from-green-200 hover:to-teal-200 rounded-full text-sm text-gray-700 transition-all trending-pulse" data-search="language intensive">🗣️ Intensive Language</button>
+                <button class="trending-tag px-3 py-1 bg-gradient-to-r from-purple-100 to-pink-100 hover:from-purple-200 hover:to-pink-200 rounded-full text-sm text-gray-700 transition-all trending-pulse" data-search="france paris">🇫🇷 French in Paris</button>
+            </div>
+        </div>
+
+        <!-- Results count (mobile) -->
+        <div id="mobileResultCount" class="text-sm text-gray-600 md:hidden font-medium"></div>
+
+        <!-- Enhanced Favorites Bar -->
+        <section id="favoritesBar" class="hidden glass rounded-xl p-4 md:p-6 border border-gray-200"></section>
+
+        <!-- Enhanced Recent Section -->
+        <section id="recentWrap" class="hidden">
+            <div class="flex items-center justify-between mb-3">
+                <div class="text-sm font-semibold text-gray-900 flex items-center">
+                    <span class="mr-2">👁️</span>
+                    Recently viewed
+                </div>
+                <button id="clearRecent" class="text-xs text-gray-500 hover:text-gray-700 touch-target hover:bg-gray-100 px-2 py-1 rounded transition-colors">Clear</button>
+            </div>
+            <div id="recentRow" class="flex gap-3 overflow-x-auto no-scrollbar py-1"></div>
+        </section>
+
+        <!-- Enhanced Stats Dashboard (responsive) -->
+        <section id="statsSection" class="bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 rounded-xl p-4 md:p-6 border border-gray-200 shadow-lg">
+            <h3 class="text-base md:text-lg font-semibold text-gray-900 mb-3 md:mb-4 flex items-center">
+                <span class="mr-2 text-xl">📊</span>
+                Market Insights
+            </h3>
+            <div class="mobile-stats grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                <div class="text-center bg-white bg-opacity-50 rounded-lg p-3 hover:bg-opacity-75 transition-all">
+                    <div id="avgPrice" class="text-xl md:text-2xl font-bold text-blue-600">€--</div>
+                    <div class="text-xs text-gray-600">Avg. Price</div>
+                </div>
+                <div class="text-center bg-white bg-opacity-50 rounded-lg p-3 hover:bg-opacity-75 transition-all">
+                    <div id="topCountry" class="text-xl md:text-2xl font-bold text-green-600">--</div>
+                    <div class="text-xs text-gray-600">Top Country</div>
+                </div>
+                <div class="text-center bg-white bg-opacity-50 rounded-lg p-3 hover:bg-opacity-75 transition-all">
+                    <div id="budgetOptions" class="text-xl md:text-2xl font-bold text-orange-600">--</div>
+                    <div class="text-xs text-gray-600">Budget Options</div>
+                </div>
+                <div class="text-center bg-white bg-opacity-50 rounded-lg p-3 hover:bg-opacity-75 transition-all">
+                    <div id="onlinePct" class="text-xl md:text-2xl font-bold text-purple-600">--%</div>
+                    <div class="text-xs text-gray-600">Online Available</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Enhanced Course grid with lazy loading -->
+        <div id="coursesGrid" class="mobile-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6"></div>
+
+        <!-- Load more button for mobile -->
+        <div class="text-center md:hidden">
+            <button id="loadMoreBtn" class="hidden bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-medium px-6 py-3 rounded-lg transition-all touch-target shadow-lg">Load More Courses</button>
+        </div>
+    </main>
+
+    <!-- Enhanced Modal with mobile optimization -->
+    <div id="course-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 md:p-4 z-50">
+        <div id="modal-box" class="mobile-modal bg-white text-gray-900 rounded-xl shadow-2xl w-full max-w-4xl modal-content-max no-scrollbar mobile-slide-up">
+            <div class="p-4 md:p-6 lg:p-8">
+                <div class="flex items-start justify-between mb-6">
+                    <h2 id="modal-title" class="text-xl md:text-2xl font-bold pr-4"></h2>
+                    <button onclick="closeModal()" class="text-gray-600 hover:text-black text-2xl leading-none touch-target hover:bg-gray-100 rounded-full w-10 h-10 flex items-center justify-center transition-colors">&times;</button>
+                </div>
+                <div id="modal-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced Desktop AI Widget -->
+    <div id="aiWidget" class="desktop-ai fixed bottom-4 right-4 w-80 h-96 bg-white border-2 border-purple-200 rounded-xl shadow-2xl flex flex-col overflow-hidden z-50 hover:shadow-3xl transition-all">
+        <div class="gradient-animate text-white px-4 py-3 flex items-center justify-between">
+            <div class="font-semibold text-sm flex items-center">
+                <span class="mr-2 text-lg">🤖</span>
+                AI Course Assistant
+            </div>
+            <button id="chatToggle" class="text-white text-lg hover:text-gray-200 transition-colors">_</button>
+        </div>
+        <div id="aiMessages" class="flex-1 p-3 flex flex-col gap-2 overflow-y-auto no-scrollbar bg-gray-50">
+            <div class="self-start bg-white text-gray-900 rounded-lg px-3 py-2 max-w-xs text-sm shadow-sm border">
+                👋 Hi! I'm your intelligent course advisor. I can help you find the perfect course, compare pricing, analyze trends, or provide personalized recommendations. What would you like to know?
+            </div>
+        </div>
+        <div class="p-3 border-t border-gray-200 flex gap-2 bg-white">
+            <input id="aiInput" type="text" placeholder="Ask about courses..." class="flex-1 p-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"/>
+            <button id="aiSend" class="px-3 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg text-sm hover:from-purple-700 hover:to-blue-700 transition-all">Send</button>
+        </div>
+    </div>
+
+    <!-- Enhanced Mobile AI Toggle -->
+    <div id="mobileAiToggle" class="mobile-ai-toggle fixed bottom-4 right-4 w-14 h-14 gradient-animate text-white rounded-full flex items-center justify-center shadow-xl z-50 touch-target hover:shadow-2xl transition-all">
+        <span class="text-2xl">🤖</span>
+    </div>
+
+    <!-- Enhanced Mobile AI Overlay -->
+    <div id="mobileAiOverlay" class="mobile-ai-overlay">
+        <div class="mobile-ai-content shadow-2xl">
+            <div class="gradient-animate text-white px-4 py-3 flex items-center justify-between rounded-t-xl">
+                <div class="font-semibold flex items-center">
+                    <span class="mr-2 text-lg">🤖</span>
+                    AI Course Assistant
+                </div>
+                <button id="closeMobileAi" class="text-white text-xl touch-target hover:bg-white hover:bg-opacity-20 rounded-full w-8 h-8 flex items-center justify-center transition-colors">&times;</button>
+            </div>
+            <div id="mobileAiMessages" class="flex-1 p-4 flex flex-col gap-3 overflow-y-auto bg-gray-50">
+                <div class="self-start bg-white text-gray-900 rounded-lg px-3 py-2 text-sm shadow-sm">
+                    👋 Hi! I'm your intelligent course advisor. How can I help you find the perfect course today?
+                </div>
+            </div>
+            <div class="p-4 border-t border-gray-200 flex gap-2 rounded-b-xl bg-white">
+                <input id="mobileAiInput" type="text" placeholder="Ask about courses..." class="flex-1 p-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"/>
+                <button id="mobileAiSend" class="px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg text-sm hover:from-purple-700 hover:to-blue-700 transition-all touch-target">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Course data -->
+    <script id="courses-data" type="application/json">
+        [
+            {
+                "title": "Die Bewerbungsschreiber",
+                "description": "Professional application writing service with ATS-optimized deliverables.",
+                "description2": "German provider producing tailored CVs, cover letters, and full application documents for the DACH market; transparent per-item pricing and fast delivery.",
+                "country": "Germany",
+                "category": "CV",
+                "startPrice": 89,
+                "priceTier": "low",
+                "duration": "1-2 weeks",
+                "format": "Online",
+                "pageLink": "",
+                "webpage": "https://www.die-bewerbungsschreiber.de/",
+                "services": [
+                    "CV writing",
+                    "Cover letter",
+                    "Complete application package",
+                    "LinkedIn optimization"
+                ],
+                "subTabs": ["CV Writing","Cover Letters","Application Package","LinkedIn"],
+                "badges": [{ "text": "Best Value", "icon": "💎", "color": "#28a745" }],
+                "provider": {
+                    "name": "Die Bewerbungsschreiber",
+                    "description": "Professional application writing service with ATS-optimized deliverables for the German market."
+                },
+                "popularity": 85,
+                "trending": true,
+                "rating": 4.8,
+                "reviews": 127
+            },
+            {
+                "title": "CV People Ireland",
+                "description": "Irish CV-writing and career documents provider.",
+                "description2": "Packages for different career stages with optional add-ons like cover letters and LinkedIn optimization; online delivery and revisions included.",
+                "country": "Ireland",
+                "category": "CV",
+                "startPrice": 179,
+                "priceTier": "mid",
+                "duration": "1-2 weeks",
+                "format": "Online",
+                "pageLink": "",
+                "webpage": "https://www.cvpeople.ie/shop/",
+                "services": [
+                    "Graduate CV",
+                    "Professional CV",
+                    "Executive CV",
+                    "Cover Letter",
+                    "LinkedIn Profile",
+                    "Interview Coaching"
+                ],
+                "subTabs": ["Graduate CV","Professional CV","Executive CV","Cover Letters"],
+                "badges": [{ "text": "Premium", "icon": "⭐", "color": "#ffd700" }],
+                "provider": {
+                    "name": "CV People Ireland",
+                    "description": "Irish CV-writing and career documents provider with packages for different career stages."
+                },
+                "popularity": 78,
+                "featured": true,
+                "rating": 4.6,
+                "reviews": 89
+            },
+            {
+                "title": "Swiss Career Coaching",
+                "description": "Premium career coaching services in Switzerland.",
+                "description2": "High-end Swiss career consulting offering personalized coaching, career strategy, and executive positioning for Swiss professionals.",
+                "country": "Switzerland",
+                "category": "Career Coaching",
+                "startPrice": 350,
+                "priceTier": "high",
+                "duration": "3-4 weeks",
+                "format": "Hybrid",
+                "pageLink": "",
+                "webpage": "https://swisscareercoaching.ch/",
+                "services": [
+                    "Career strategy",
+                    "Executive coaching",
+                    "Personal branding",
+                    "Salary negotiation"
+                ],
+                "subTabs": ["Career Strategy","Executive Coaching","Personal Branding","Salary Negotiation"],
+                "badges": [{ "text": "Premium", "icon": "👑", "color": "#9333ea" }],
+                "provider": {
+                    "name": "Swiss Career Coaching",
+                    "description": "Premium career coaching services for Swiss professionals."
+                },
+                "popularity": 92,
+                "premium": true,
+                "rating": 4.9,
+                "reviews": 156
+            },
+            {
+                "title": "French Language Institute Paris",
+                "description": "Intensive French language courses in Paris.",
+                "description2": "Immersive French language learning with native instructors, cultural activities, and certification preparation in the heart of Paris.",
+                "country": "France",
+                "category": "Language",
+                "startPrice": 299,
+                "priceTier": "mid",
+                "duration": "4-8 weeks",
+                "format": "In-person",
+                "pageLink": "",
+                "webpage": "https://frenchlanguageparis.fr/",
+                "services": [
+                    "Beginner French",
+                    "Intermediate French",
+                    "Advanced French",
+                    "Business French",
+                    "DELF/DALF Prep"
+                ],
+                "subTabs": ["Beginner","Intermediate","Advanced","Business","Certification"],
+                "badges": [{ "text": "Immersive", "icon": "🇫🇷", "color": "#dc2626" }],
+                "provider": {
+                    "name": "French Language Institute Paris",
+                    "description": "Premier French language institute in Paris with native instructors."
+                },
+                "popularity": 88,
+                "quickStart": true,
+                "rating": 4.7,
+                "reviews": 203
+            },
+            {
+                "title": "Medical Career Germany",
+                "description": "Specialized medical career preparation for Germany.",
+                "description2": "Comprehensive medical career preparation including language training, credential recognition, and job placement assistance for international doctors in Germany.",
+                "country": "Germany",
+                "category": "Medical",
+                "startPrice": 450,
+                "priceTier": "high",
+                "duration": "6-12 weeks",
+                "format": "Hybrid",
+                "pageLink": "",
+                "webpage": "https://medicalcareergermany.de/",
+                "services": [
+                    "Medical German",
+                    "Credential recognition",
+                    "Job placement",
+                    "Integration support"
+                ],
+                "subTabs": ["Language","Credentials","Job Placement","Integration"],
+                "badges": [{ "text": "Medical Focus", "icon": "🏥", "color": "#059669" }],
+                "provider": {
+                    "name": "Medical Career Germany",
+                    "description": "Specialized medical career services for international doctors in Germany."
+                },
+                "popularity": 94,
+                "trending": true,
+                "rating": 4.9,
+                "reviews": 178
+            },
+            {
+                "title": "Budget CV Express",
+                "description": "Affordable CV writing services with quick turnaround.",
+                "description2": "Fast and affordable CV writing service with professional templates, ATS optimization, and 48-hour delivery for budget-conscious job seekers.",
+                "country": "Netherlands",
+                "category": "CV",
+                "startPrice": 59,
+                "priceTier": "low",
+                "duration": "2-3 days",
+                "format": "Online",
+                "pageLink": "",
+                "webpage": "https://budgetcvexpress.nl/",
+                "services": [
+                    "Basic CV",
+                    "ATS optimization",
+                    "Cover letter",
+                    "LinkedIn profile"
+                ],
+                "subTabs": ["Basic CV","ATS Optimization","Cover Letter","LinkedIn"],
+                "badges": [{ "text": "Budget Friendly", "icon": "💰", "color": "#f59e0b" }],
+                "provider": {
+                    "name": "Budget CV Express",
+                    "description": "Affordable and fast CV writing services for budget-conscious professionals."
+                },
+                "popularity": 72,
+                "quickStart": true,
+                "rating": 4.3,
+                "reviews": 95
+            }
+        ]
+    </script>
+
+    <!-- Enhanced JavaScript with all fixes -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+        import { getFirestore, collection, doc, addDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB30k2u26SR9jeuCyI937iKoymdjL15Bwk",
+            authDomain: "eurolynk-65ceb.firebaseapp.com",
+            databaseURL: "https://eurolynk-65ceb-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "eurolynk-65ceb",
+            storageBucket: "eurolynk-65ceb.firebasestorage.app",
+            messagingSenderId: "540499953724",
+            appId: "1:540499953724:web:352a3dcf870972c1219b39",
+            measurementId: "G-D1EE0R2KGD"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        await signInAnonymously(auth).catch(console.error);
+
+        // Optimized DOM caching
+        const byId = id => document.getElementById(id);
+        const esc = (s='') => s.replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c]));
+
+        // Global state
+        let COURSES = [];
+        let CURRENT_COURSE = null;
+        let ADMIN_UNLOCKED = false;
+        let isMobile = window.innerWidth <= 768;
+        let currentPage = 1;
+        const coursesPerPage = 6;
+        let allFilteredCourses = [];
+        let searchTimeout = null;
+
+        // Mobile detection with debouncing
+        function detectMobile() {
+            const wasMobile = isMobile;
+            isMobile = window.innerWidth <= 768;
+            
+            if (wasMobile !== isMobile) {
+                applyFilters();
+            }
+        }
+
+        // Debounced search function
+        function debouncedSearch() {
+            if (searchTimeout) clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => applyFilters(), 300);
+        }
+
+        window.addEventListener('resize', detectMobile);
+
+        const EU_COUNTRIES = ["Austria","Belgium","Bulgaria","Croatia","Cyprus","Czechia","Denmark","Estonia","Finland","France","Germany","Greece","Hungary","Ireland","Italy","Latvia","Lithuania","Luxembourg","Malta","Netherlands","Poland","Portugal","Romania","Slovakia","Slovenia","Spain","Sweden"];
+        const FAVORITES_KEY = 'eurol_favorites';
+        const RECENT_KEY = 'eurol_recent';
+
+        // Enhanced error handling for localStorage
+        function loadFavorites(){
+            try{
+                return JSON.parse(localStorage.getItem(FAVORITES_KEY)||'[]');
+            }catch(_){
+                console.warn('Failed to load favorites from localStorage');
+                return [];
+            }
+        }
+
+        function saveFavorites(arr){
+            try {
+                localStorage.setItem(FAVORITES_KEY, JSON.stringify(arr||[]));
+            } catch (e) {
+                console.error('Failed to save favorites to localStorage:', e);
+            }
+        }
+
+        function isFav(title){
+            return loadFavorites().includes(title);
+        }
+
+        function toggleFav(title){
+            let fav = loadFavorites();
+            fav = fav.includes(title)? fav.filter(t=>t!==title) : [title, ...fav];
+            saveFavorites(fav);
+        }
+
+        function addRecent(title){
+            try {
+                let rec = JSON.parse(localStorage.getItem(RECENT_KEY)||'[]');
+                rec = [title, ...rec.filter(t=>t!==title)].slice(0,8);
+                localStorage.setItem(RECENT_KEY, JSON.stringify(rec));
+            } catch (e) {
+                console.error('Failed to update recent courses:', e);
+            }
+        }
+
+        function getRecent(){
+            try {
+                return JSON.parse(localStorage.getItem(RECENT_KEY)||'[]');
+            }catch(_){
+                return [];
+            }
+        }
+
+        function clearRecent(){
+            try {
+                localStorage.removeItem(RECENT_KEY);
+                renderRecentSection();
+            } catch (e) {
+                console.error('Failed to clear recent courses:', e);
+            }
+        }
+
+        function stars(r=0){
+            const n=Math.round(Number(r)||0);
+            return '★'.repeat(n)+'☆'.repeat(5-n);
+        }
+
+        function hydrateFromInlineJson(){
+            try{
+                const raw=byId('courses-data')?.textContent||'[]';
+                const json=JSON.parse(raw);
+                return Array.isArray(json)?json:[];
+            }catch(e){
+                console.error('Failed to parse course data:', e);
+                return [];
+            }
+        }
+
+        // Enhanced Service Pricing System
+        function seededRand(str){
+            let h=2166136261;
+            for(let i=0;i<str.length;i++){
+                h^=str.charCodeAt(i);
+                h+=(h<<1)+(h<<4)+(h<<7)+(h<<8)+(h<<24);
+            }
+            return ((h>>>0)%10000)/10000;
+        }
+
+        function generateServicePricing(course){
+            const base=Number(course.startPrice||100);
+            return (course.services||[]).map((s, i)=>({
+                name:s,
+                price: Math.max(20, Math.round(base*(0.6+seededRand((course.title||'')+'|'+s)*0.8) + (i*base*0.1)))
+            }));
+        }
+
+        function getServicePricing(course){
+            if (Array.isArray(course.servicePricing) && course.servicePricing.length) {
+                return course.servicePricing.map(x=>({name:x.name,price:Number(x.price||0)})).filter(x=>x.name && x.price>0);
+            }
+            
+            try{
+                const raw=localStorage.getItem(`svcprice:${course.title||''}`);
+                if(raw){
+                    const arr=JSON.parse(raw);
+                    if(Array.isArray(arr)&&arr.length) return arr;
+                }
+            }catch(e){
+                console.warn('Failed to load cached service pricing:', e);
+            }
+            
+            const gen=generateServicePricing(course);
+            try {
+                localStorage.setItem(`svcprice:${course.title||''}`, JSON.stringify(gen));
+            } catch (e) {
+                console.warn('Failed to cache service pricing:', e);
+            }
+            return gen;
+        }
+
+        function getMinPrice(course){
+            const svc=getServicePricing(course);
+            return svc.length? Math.min(...svc.map(x=>x.price)) : Number(course.startPrice||0);
+        }
+
+        // Performance optimization: Lazy loading with IntersectionObserver
+        function lazyLoadCourses() {
+            const elements = document.querySelectorAll('.lazy-load:not(.loaded)');
+            if (!elements.length) return;
+
+            if ('IntersectionObserver' in window) {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('loaded');
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, {
+                    rootMargin: '50px',
+                    threshold: 0.1
+                });
+                
+                elements.forEach(el => observer.observe(el));
+            } else {
+                // Fallback for older browsers
+                elements.forEach(el => el.classList.add('loaded'));
+            }
+        }
+
+        // Marketing Features with error handling
+        function updateSmartBanner(){
+            try {
+                const insights = [
+                    "🔥 Most popular courses are in Germany (45% of selections)",
+                    "🏥 Medical courses have the highest success rate (94%)",
+                    "💰 Budget options under €200 make up 35% of our catalog",
+                    "💻 Online courses are 40% faster to complete on average",
+                    "📝 CV services show ROI within 2 weeks for 78% of users",
+                    "🇫🇷 Language courses in France have 92% completion rates",
+                    "⚡ AI-powered matching increases course satisfaction by 67%",
+                    "🎯 Personalized recommendations boost success rates by 45%"
+                ];
+                const randomInsight = insights[Math.floor(Math.random() * insights.length)];
+                const smartText = byId('smartText');
+                if (smartText) smartText.textContent = randomInsight;
+            } catch (e) {
+                console.error('Failed to update smart banner:', e);
+            }
+        }
+
+        function updateMarketStats(){
+            try {
+                if (!COURSES.length) return;
+                
+                const prices = COURSES.map(c => c.startPrice || 0);
+                const avgPrice = Math.round(prices.reduce((a,b)=>a+b,0)/prices.length);
+                
+                const avgPriceEl = byId('avgPrice');
+                if (avgPriceEl) avgPriceEl.textContent = `€${avgPrice}`;
+                
+                const countryCount = {};
+                COURSES.forEach(c => {
+                    if (c.country) {
+                        countryCount[c.country] = (countryCount[c.country] || 0) + 1;
+                    }
+                });
+                const topCountry = Object.entries(countryCount).sort(([,a], [,b]) => b - a)[0]?.[0] || '--';
+                
+                const topCountryEl = byId('topCountry');
+                if (topCountryEl) topCountryEl.textContent = topCountry;
+                
+                const budgetCount = COURSES.filter(c => (c.startPrice || 0) <= 200).length;
+                const budgetOptionsEl = byId('budgetOptions');
+                if (budgetOptionsEl) budgetOptionsEl.textContent = budgetCount;
+                
+                const onlineCount = COURSES.filter(c => c.format === 'Online').length;
+                const onlinePct = COURSES.length > 0 ? Math.round((onlineCount / COURSES.length) * 100) : 0;
+                
+                const onlinePctEl = byId('onlinePct');
+                if (onlinePctEl) onlinePctEl.textContent = `${onlinePct}%`;
+            } catch (e) {
+                console.error('Failed to update market stats:', e);
+            }
+        }
+
+        function getMarketingBadge(course) {
+            try {
+                if (course.trending) return '<div class="marketing-badge"><span class="px-2 py-1 bg-red-500 text-white text-xs rounded-full trending-pulse">🔥 Trending</span></div>';
+                if (course.featured) return '<div class="marketing-badge"><span class="px-2 py-1 bg-blue-500 text-white text-xs rounded-full">⭐ Featured</span></div>';
+                if (course.quickStart) return '<div class="marketing-badge"><span class="px-2 py-1 bg-green-500 text-white text-xs rounded-full">⚡ Quick Start</span></div>';
+                if (course.premium) return '<div class="marketing-badge"><span class="px-2 py-1 bg-purple-500 text-white text-xs rounded-full">👑 Premium</span></div>';
+                return '';
+            } catch (e) {
+                console.error('Failed to generate marketing badge:', e);
+                return '';
+            }
+        }
+
+        function getPopularityBar(popularity = 50) {
+            try {
+                const width = Math.min(100, Math.max(0, popularity));
+                return `<div class="mt-2"><div class="flex items-center justify-between text-xs text-gray-600 mb-1"><span>Popularity</span><span>${width}%</span></div><div class="w-full bg-gray-200 rounded-full h-1"><div class="popularity-bar h-1 rounded-full" style="width: ${width}%"></div></div></div>`;
+            } catch (e) {
+                console.error('Failed to generate popularity bar:', e);
+                return '';
+            }
+        }
+
+        function populateFilterOptions(){
+            try {
+                const populateSelect = (selectId, options, defaultText) => {
+                    const sel = byId(selectId);
+                    if (sel) {
+                        sel.innerHTML = `<option value="">${defaultText}</option>` + options.map(opt => `<option value="${esc(opt)}">${esc(opt)}</option>`).join('');
+                    }
+                };
+
+                const countries = [...new Set(COURSES.map(c=>c.country).filter(Boolean))];
+                const categories = [...new Set(COURSES.map(c=>c.category).filter(Boolean))].sort();
+                const formats = [...new Set(COURSES.map(c=>c.format).filter(Boolean))].sort();
+                const durations = [...new Set(COURSES.map(c=>c.duration).filter(Boolean))].sort();
+
+                // Desktop filters
+                populateSelect('filterCountry', EU_COUNTRIES.concat(countries.filter(c=>!EU_COUNTRIES.includes(c))), '🌍 Country');
+                populateSelect('filterCategory', categories, '📚 Category');
+                populateSelect('filterFormat', formats, '💻 Format');
+                populateSelect('filterDuration', durations, '⏱️ Duration');
+
+                // Mobile filters
+                populateSelect('mobileFilterCountry', EU_COUNTRIES.concat(countries.filter(c=>!EU_COUNTRIES.includes(c))), 'Any Country');
+                populateSelect('mobileFilterCategory', categories, 'Any Category');
+                populateSelect('mobileFilterFormat', formats, 'Any Format');
+
+                // Price options
+                const priceOptions = ['<option value="">Any Price</option>','<option value="0-200">€0–€200</option>','<option value="200-500">€200–€500</option>','<option value="500-1000">€500–€1000</option>','<option value="1000-999999">€1000+</option>'];
+                const priceSelects = ['filterPrice', 'mobileFilterPrice'];
+                priceSelects.forEach(id => {
+                    const sel = byId(id);
+                    if (sel) sel.innerHTML = priceOptions.join('');
+                });
+
+                // Rating options
+                const ratingOptions = ['<option value="">⭐ Min Rating</option>','<option value="4.0">4.0+</option>','<option value="4.5">4.5+</option>','<option value="4.8">4.8+</option>'];
+                const ratingSel = byId('filterRating');
+                if (ratingSel) ratingSel.innerHTML = ratingOptions.join('');
+            } catch (e) {
+                console.error('Failed to populate filter options:', e);
+            }
+        }
+
+        function priceMatch(range, price){
+            if(!range) return true;
+            const [min,max]=range.split('-').map(Number);
+            return price>=min && price<=max;
+        }
+
+        function getFilters(isMobileFilters = false) {
+            try {
+                const prefix = isMobileFilters ? 'mobile' : '';
+                const Country = byId(prefix + (prefix ? 'FilterCountry' : 'filterCountry'))?.value || '';
+                const Category = byId(prefix + (prefix ? 'FilterCategory' : 'filterCategory'))?.value || '';
+                const Format = byId(prefix + (prefix ? 'FilterFormat' : 'filterFormat'))?.value || '';
+                const Duration = byId(prefix + (prefix ? 'FilterDuration' : 'filterDuration'))?.value || '';
+                const Rating = parseFloat(byId(prefix + (prefix ? 'FilterRating' : 'filterRating'))?.value || '') || 0;
+                const Price = byId(prefix + (prefix ? 'FilterPrice' : 'filterPrice'))?.value || '';
+                const Sort = byId(prefix + (prefix ? 'SortBy' : 'sortBy'))?.value || 'relevance';
+                return { Country, Category, Format, Duration, Rating, Price, Sort };
+            } catch (e) {
+                console.error('Failed to get filters:', e);
+                return { Country: '', Category: '', Format: '', Duration: '', Rating: 0, Price: '', Sort: 'relevance' };
+            }
+        }
+
+        function applyFilters(e){
+            try {
+                if(e) e.preventDefault();
+                
+                const q=(byId('searchInput')?.value||'').toLowerCase().trim();
+                const filters = getFilters(false);
+
+                let list=COURSES.filter(c=>{
+                    const p=c.startPrice || 0;
+                    const matchesQ=!q || (c.title&&c.title.toLowerCase().includes(q)) || (c.description&&c.description.toLowerCase().includes(q)) || (c.description2&&c.description2.toLowerCase().includes(q)) || (c.country&&c.country.toLowerCase().includes(q)) || (c.category&&c.category.toLowerCase().includes(q));
+                    const matchesCountry=!filters.Country || c.country===filters.Country;
+                    const matchesCategory=!filters.Category || c.category===filters.Category;
+                    const matchesFormat=!filters.Format || c.format===filters.Format;
+                    const matchesDuration=!filters.Duration || c.duration===filters.Duration;
+                    const matchesRating=!filters.Rating || (c.rating||0)>=filters.Rating;
+                    const matchesPrice=!filters.Price || priceMatch(filters.Price, p);
+                    
+                    return matchesQ && matchesCountry && matchesCategory && matchesFormat && matchesDuration && matchesRating && matchesPrice;
+                });
+
+                // Apply sorting
+                if(filters.Sort==='price-low'){
+                    list.sort((a,b)=>(a.startPrice||0)-(b.startPrice||0));
+                } else if(filters.Sort==='price-high'){
+                    list.sort((a,b)=>(b.startPrice||0)-(a.startPrice||0));
+                } else if(filters.Sort==='rating'){
+                    list.sort((a,b)=>(b.rating||0)-(a.rating||0));
+                } else if(filters.Sort==='popularity'){
+                    list.sort((a,b)=>(b.popularity||0)-(a.popularity||0));
+                } else if(filters.Sort==='trending'){
+                    list.sort((a,b)=>(b.trending?1:0)-(a.trending?1:0));
+                }
+
+                allFilteredCourses = list;
+                currentPage = 1;
+                renderCourses();
+                updateResultCount();
+            } catch (e) {
+                console.error('Failed to apply filters:', e);
+            }
+        }
+
+        function renderCourses(){
+            try {
+                const container = byId('coursesGrid');
+                if (!container) return;
+
+                // Clear existing content
+                container.innerHTML = '';
+
+                const startIdx = (currentPage - 1) * coursesPerPage;
+                const endIdx = startIdx + coursesPerPage;
+                const coursesToShow = allFilteredCourses.slice(startIdx, endIdx);
+
+                coursesToShow.forEach(course => {
+                    const card = createCourseCard(course);
+                    container.appendChild(card);
+                });
+
+                // Show/hide load more button
+                const loadMoreBtn = byId('loadMoreBtn');
+                if (loadMoreBtn) {
+                    if (endIdx < allFilteredCourses.length) {
+                        loadMoreBtn.classList.remove('hidden');
+                    } else {
+                        loadMoreBtn.classList.add('hidden');
+                    }
+                }
+
+                // Apply lazy loading
+                setTimeout(lazyLoadCourses, 100);
+            } catch (e) {
+                console.error('Failed to render courses:', e);
+            }
+        }
+
+        function createCourseCard(course){
+            const card = document.createElement('div');
+            const isFavorite = isFav(course.title);
+            const marketingBadge = getMarketingBadge(course);
+            const popularityBar = getPopularityBar(course.popularity);
+            
+            card.className = 'relative bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer mobile-card lazy-load border border-gray-100 hover:border-purple-200 will-change-transform backface-hidden';
+            card.onclick = () => openModal(course);
+            
+            card.innerHTML = `
+                ${marketingBadge}
+                <div class="p-4 md:p-6">
+                    <div class="flex justify-between items-start mb-3">
+                        <h3 class="text-lg md:text-xl font-bold text-gray-900 pr-2 leading-tight">${esc(course.title)}</h3>
+                        <button onclick="event.stopPropagation(); toggleFavorite('${esc(course.title)}')" class="heart-btn text-2xl hover:scale-110 transition-transform touch-target ${isFavorite ? 'text-red-500' : 'text-gray-300 hover:text-red-400'}">
+                            ${isFavorite ? '❤️' : '🤍'}
+                        </button>
+                    </div>
+                    
+                    <p class="text-gray-600 text-sm mb-4 line-clamp-2">${esc(course.description)}</p>
+                    
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <span class="px-3 py-1 bg-blue-100 text-blue-800 text-xs rounded-full font-medium">🌍 ${esc(course.country)}</span>
+                        <span class="px-3 py-1 bg-green-100 text-green-800 text-xs rounded-full font-medium">📚 ${esc(course.category)}</span>
+                        <span class="px-3 py-1 bg-purple-100 text-purple-800 text-xs rounded-full font-medium">💻 ${esc(course.format)}</span>
+                    </div>
+                    
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                            €${course.startPrice}
+                        </div>
+                        <div class="text-sm text-gray-500 flex items-center">
+                            <span class="mr-1">⏱️</span>
+                            ${esc(course.duration)}
+                        </div>
+                    </div>
+                    
+                    ${course.rating ? `
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center">
+                                <span class="text-yellow-400 mr-1">${stars(course.rating)}</span>
+                                <span class="text-sm text-gray-600">${course.rating}</span>
+                            </div>
+                            <span class="text-sm text-gray-500">${course.reviews || 0} reviews</span>
+                        </div>
+                    ` : ''}
+                    
+                    ${course.badges ? `
+                        <div class="flex gap-2 mb-3">
+                            ${course.badges.map(badge => `
+                                <span class="px-2 py-1 text-xs rounded-full font-medium" style="background-color: ${badge.color}20; color: ${badge.color};">
+                                    ${badge.icon} ${esc(badge.text)}
+                                </span>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                    
+                    ${popularityBar}
+                    
+                    <div class="mt-4 pt-3 border-t border-gray-100">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-600">📋 ${course.services?.length || 0} services</span>
+                            <span class="text-sm font-medium text-purple-600 hover:text-purple-800">View Details →</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        function openModal(course) {
+            try {
+                CURRENT_COURSE = course;
+                addRecent(course.title);
+                
+                const modal = byId('course-modal');
+                const modalTitle = byId('modal-title');
+                const modalContent = byId('modal-content');
+                
+                if (!modal || !modalTitle || !modalContent) return;
+                
+                modalTitle.textContent = course.title;
+                
+                const servicePricing = getServicePricing(course);
+                const isFavorite = isFav(course.title);
+                
+                modalContent.innerHTML = `
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
+                        <div>
+                            <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4 md:p-6 mb-6">
+                                <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                                    <span class="mr-2">📋</span>
+                                    Course Overview
+                                </h3>
+                                <p class="text-gray-700 mb-4">${esc(course.description2)}</p>
+                                
+                                <div class="grid grid-cols-2 gap-4 text-sm">
+                                    <div>
+                                        <span class="text-gray-600">Country:</span>
+                                        <div class="font-medium flex items-center">
+                                            <span class="mr-1">🌍</span>
+                                            ${esc(course.country)}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-600">Category:</span>
+                                        <div class="font-medium flex items-center">
+                                            <span class="mr-1">📚</span>
+                                            ${esc(course.category)}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-600">Format:</span>
+                                        <div class="font-medium flex items-center">
+                                            <span class="mr-1">💻</span>
+                                            ${esc(course.format)}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-600">Duration:</span>
+                                        <div class="font-medium flex items-center">
+                                            <span class="mr-1">⏱️</span>
+                                            ${esc(course.duration)}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                ${course.rating ? `
+                                    <div class="mt-4 pt-4 border-t border-gray-200">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center">
+                                                <span class="text-yellow-400 mr-2">${stars(course.rating)}</span>
+                                                <span class="font-medium">${course.rating}</span>
+                                            </div>
+                                            <span class="text-sm text-gray-600">${course.reviews || 0} reviews</span>
+                                        </div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                            
+                            <div class="space-y-3">
+                                <button onclick="toggleFavorite('${esc(course.title)}')" class="w-full py-3 px-6 rounded-lg font-medium transition-all touch-target ${isFavorite ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white hover:from-red-600 hover:to-pink-600' : 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 hover:from-gray-200 hover:to-gray-300'}">
+                                    ${isFavorite ? '❤️ Remove from Favorites' : '🤍 Add to Favorites'}
+                                </button>
+                                
+                                ${course.webpage ? `
+                                    <a href="${esc(course.webpage)}" target="_blank" class="block w-full py-3 px-6 rounded-lg font-medium text-center bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600 transition-all touch-target">
+                                        🌐 Visit Website
+                                    </a>
+                                ` : ''}
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="bg-gradient-to-r from-green-50 to-teal-50 rounded-xl p-4 md:p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                                    <span class="mr-2">💰</span>
+                                    Services & Pricing
+                                </h3>
+                                
+                                <div class="space-y-3">
+                                    ${servicePricing.map((service, index) => `
+                                        <div class="flex justify-between items-center p-3 bg-white rounded-lg shadow-sm border border-gray-100 hover:border-green-200 transition-colors">
+                                            <div class="flex items-center">
+                                                <span class="w-2 h-2 bg-green-500 rounded-full mr-3"></span>
+                                                <span class="font-medium text-gray-800">${esc(service.name)}</span>
+                                            </div>
+                                            <span class="text-lg font-bold text-green-600">€${service.price}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                                
+                                <div class="mt-4 p-3 bg-white rounded-lg border border-gray-100">
+                                    <div class="flex justify-between items-center">
+                                        <span class="font-medium text-gray-800">Starting from:</span>
+                                        <span class="text-2xl font-bold bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent">€${course.startPrice}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-6 bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-4 md:p-6">
+                                <h4 class="font-semibold text-gray-900 mb-3 flex items-center">
+                                    <span class="mr-2">🏢</span>
+                                    Provider Information
+                                </h4>
+                                <h5 class="font-medium text-gray-800 mb-2">${esc(course.provider.name)}</h5>
+                                <p class="text-gray-700 text-sm mb-3">${esc(course.provider.description)}</p>
+                                
+                                ${course.badges ? `
+                                    <div class="flex flex-wrap gap-2">
+                                        ${course.badges.map(badge => `
+                                            <span class="px-3 py-1 text-sm rounded-full font-medium" style="background-color: ${badge.color}20; color: ${badge.color};">
+                                                ${badge.icon} ${esc(badge.text)}
+                                            </span>
+                                        `).join('')}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-8 border-t pt-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                            <span class="mr-2">💬</span>
+                            Reviews & Feedback
+                        </h3>
+                        <div id="reviewsSection" class="bg-gray-50 rounded-xl p-4 text-center text-gray-500">
+                            Reviews loading...
+                        </div>
+                    </div>
+                `;
+                
+                modal.classList.remove('hidden');
+                loadReviews(course.title);
+                renderRecentSection();
+                renderFavoritesBar();
+            } catch (e) {
+                console.error('Failed to open modal:', e);
+            }
+        }
+
+        function closeModal() {
+            const modal = byId('course-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+        }
+
+        function toggleFavorite(title) {
+            toggleFav(title);
+            renderFavoritesBar();
+            if (CURRENT_COURSE && CURRENT_COURSE.title === title) {
+                openModal(CURRENT_COURSE);
+            }
+        }
+
+        function loadReviews(courseTitle) {
+            // Simulate loading reviews
+            setTimeout(() => {
+                const reviewsSection = byId('reviewsSection');
+                if (reviewsSection) {
+                    reviewsSection.innerHTML = `
+                        <div class="text-left">
+                            <div class="mb-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center">
+                                        <span class="text-yellow-400 mr-2">⭐⭐⭐⭐⭐</span>
+                                        <span class="font-medium">Sarah M.</span>
+                                    </div>
+                                    <span class="text-sm text-gray-500">2 days ago</span>
+                                </div>
+                                <p class="text-gray-700 text-sm">Excellent course! Very comprehensive and well-structured. The instructors were knowledgeable and supportive throughout.</p>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center">
+                                        <span class="text-yellow-400 mr-2">⭐⭐⭐⭐</span>
+                                        <span class="font-medium">John D.</span>
+                                    </div>
+                                    <span class="text-sm text-gray-500">1 week ago</span>
+                                </div>
+                                <p class="text-gray-700 text-sm">Great value for money. The course content exceeded my expectations and helped me land a new job!</p>
+                            </div>
+                            
+                            <div class="mt-6 p-4 bg-white rounded-lg border border-gray-200">
+                                <h4 class="font-medium text-gray-900 mb-3">Add Your Review</h4>
+                                <div class="space-y-3">
+                                    <select class="w-full p-2 border border-gray-300 rounded-md text-sm">
+                                        <option>⭐⭐⭐⭐⭐ Excellent</option>
+                                        <option>⭐⭐⭐⭐ Very Good</option>
+                                        <option>⭐⭐⭐ Good</option>
+                                        <option>⭐⭐ Fair</option>
+                                        <option>⭐ Poor</option>
+                                    </select>
+                                    <textarea rows="3" placeholder="Share your experience..." class="w-full p-2 border border-gray-300 rounded-md text-sm"></textarea>
+                                    <button class="w-full py-2 px-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-md hover:from-blue-600 hover:to-purple-600 transition-all text-sm touch-target">
+                                        Submit Review
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }, 500);
+        }
+
+        function updateResultCount() {
+            const count = allFilteredCourses.length;
+            const countElement = byId('resultCount');
+            const mobileCountElement = byId('mobileResultCount');
+            
+            if (countElement) {
+                countElement.textContent = `${count} courses found`;
+            }
+            if (mobileCountElement) {
+                mobileCountElement.textContent = `${count} courses found`;
+            }
+        }
+
+        function renderFavoritesBar() {
+            const favoritesBar = byId('favoritesBar');
+            if (!favoritesBar) return;
+            
+            const favorites = loadFavorites();
+            if (favorites.length === 0) {
+                favoritesBar.classList.add('hidden');
+                return;
+            }
+            
+            favoritesBar.classList.remove('hidden');
+            const favoriteCourses = COURSES.filter(c => favorites.includes(c.title));
+            
+            favoritesBar.innerHTML = `
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                        <span class="mr-2">❤️</span>
+                        Your Favorites (${favorites.length})
+                    </h3>
+                    <button onclick="clearFavorites()" class="text-red-600 hover:text-red-800 text-sm touch-target hover:bg-red-50 px-2 py-1 rounded transition-colors">Clear All</button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    ${favoriteCourses.map(course => `
+                        <div class="bg-white bg-opacity-70 p-4 rounded-lg border border-gray-200 hover:border-purple-300 transition-all cursor-pointer touch-target" onclick="openModal(${JSON.stringify(course).replace(/"/g, '&quot;')})">
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="font-medium text-gray-800 text-sm">${esc(course.title)}</h4>
+                                <button onclick="event.stopPropagation(); toggleFavorite('${esc(course.title)}')" class="text-red-500 hover:text-red-700 text-lg">❤️</button>
+                            </div>
+                            <p class="text-xs text-gray-600 mb-2">${esc(course.country)} • ${esc(course.category)}</p>
+                            <div class="text-lg font-bold text-purple-600">€${course.startPrice}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function clearFavorites() {
+            saveFavorites([]);
+            renderFavoritesBar();
+        }
+
+        function renderRecentSection() {
+            const recentWrap = byId('recentWrap');
+            const recentRow = byId('recentRow');
+            if (!recentWrap || !recentRow) return;
+            
+            const recent = getRecent();
+            if (recent.length === 0) {
+                recentWrap.classList.add('hidden');
+                return;
+            }
+            
+            recentWrap.classList.remove('hidden');
+            const recentCourses = COURSES.filter(c => recent.includes(c.title));
+            
+            recentRow.innerHTML = recentCourses.map(course => `
+                <div class="flex-shrink-0 w-48 bg-white p-3 rounded-lg border border-gray-200 hover:border-blue-300 transition-all cursor-pointer touch-target" onclick="openModal(${JSON.stringify(course).replace(/"/g, '&quot;')})">
+                    <h4 class="font-medium text-gray-800 text-sm mb-1 truncate">${esc(course.title)}</h4>
+                    <p class="text-xs text-gray-600 mb-2">${esc(course.country)} • ${esc(course.category)}</p>
+                    <div class="text-base font-bold text-blue-600">€${course.startPrice}</div>
+                </div>
+            `).join('');
+        }
+
+        // Mobile menu functions
+        function openMobileMenu() {
+            const menu = byId('mobileMenu');
+            const overlay = byId('mobileMenuOverlay');
+            if (menu && overlay) {
+                menu.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+            }
+        }
+
+        function closeMobileMenu() {
+            const menu = byId('mobileMenu');
+            const overlay = byId('mobileMenuOverlay');
+            if (menu && overlay) {
+                menu.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        }
+
+        // AI Assistant Functions
+        function addAIMessage(message, isUser = false, isMobile = false) {
+            const container = isMobile ? byId('mobileAiMessages') : byId('aiMessages');
+            if (!container) return;
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `${isUser ? 'self-end' : 'self-start'} max-w-xs`;
+            
+            messageDiv.innerHTML = `
+                <div class="p-3 rounded-lg text-sm ${isUser ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white ml-auto' : 'bg-white text-gray-900 shadow-sm border'}">
+                    ${esc(message)}
+                </div>
+            `;
+            
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function processAIQuery(query) {
+            const q = query.toLowerCase();
+            
+            // Enhanced AI responses with more context
+            if (q.includes('budget') || q.includes('cheap') || q.includes('affordable')) {
+                const budgetCourses = COURSES.filter(c => (c.startPrice || 0) <= 200);
+                return `💰 Found ${budgetCourses.length} budget-friendly courses under €200:\n\n${budgetCourses.slice(0, 3).map(c => `• ${c.title} - €${c.startPrice} (${c.country})`).join('\n')}\n\nThese courses offer great value while maintaining quality standards!`;
+            }
+            
+            if (q.includes('popular') || q.includes('trending') || q.includes('best')) {
+                const popularCourses = COURSES.filter(c => c.trending || c.featured || (c.popularity || 0) > 80);
+                return `🔥 Most popular courses right now:\n\n${popularCourses.slice(0, 3).map(c => `• ${c.title} - ${c.rating ? c.rating + '⭐' : 'Highly rated'} (${c.country})`).join('\n')}\n\nThese courses have excellent reviews and high completion rates!`;
+            }
+            
+            if (q.includes('germany') || q.includes('german')) {
+                const germanCourses = COURSES.filter(c => c.country === 'Germany');
+                const avgPrice = germanCourses.length ? Math.round(germanCourses.reduce((sum, c) => sum + (c.startPrice || 0), 0) / germanCourses.length) : 0;
+                return `🇩🇪 Germany offers ${germanCourses.length} excellent courses:\n\n• Average price: €${avgPrice}\n• Strong focus on medical and CV services\n• High success rates for international students\n• Comprehensive support systems\n\nWould you like details on any specific German course?`;
+            }
+            
+            if (q.includes('cv') || q.includes('resume')) {
+                const cvCourses = COURSES.filter(c => c.category === 'CV');
+                return `📝 CV Writing services available:\n\n${cvCourses.slice(0, 3).map(c => `• ${c.title} - €${c.startPrice} (${c.duration})`).join('\n')}\n\nAll our CV services include ATS optimization and professional formatting!`;
+            }
+            
+            if (q.includes('online') || q.includes('remote')) {
+                const onlineCourses = COURSES.filter(c => c.format === 'Online');
+                return `💻 ${onlineCourses.length} online courses available:\n\n• Flexible scheduling\n• Interactive learning platforms\n• 24/7 support\n• Digital certificates\n\nPerfect for busy professionals!`;
+            }
+            
+            // General help
+            return `🤖 I'm here to help you find the perfect course! I can assist with:\n\n• Finding budget-friendly options\n• Recommending popular courses\n• Country-specific information\n• Course comparisons\n• Pricing analysis\n\nTry asking: "Show me budget courses" or "What's popular in Germany?"`;
+        }
+
+        function sendAIMessage(isMobile = false) {
+            const inputId = isMobile ? 'mobileAiInput' : 'aiInput';
+            const input = byId(inputId);
+            if (!input) return;
+            
+            const message = input.value.trim();
+            if (!message) return;
+            
+            addAIMessage(message, true, isMobile);
+            input.value = '';
+            
+            // Show typing indicator
+            setTimeout(() => {
+                addAIMessage('Thinking...', false, isMobile);
+            }, 300);
+            
+            // Process and respond
+            setTimeout(() => {
+                const container = isMobile ? byId('mobileAiMessages') : byId('aiMessages');
+                if (container && container.lastChild) {
+                    container.removeChild(container.lastChild); // Remove typing indicator
+                }
+                const response = processAIQuery(message);
+                addAIMessage(response, false, isMobile);
+            }, 1500);
+        }
+
+        function toggleMobileAI() {
+            const overlay = byId('mobileAiOverlay');
+            if (overlay) {
+                overlay.classList.toggle('active');
+            }
+        }
+
+        function closeMobileAI() {
+            const overlay = byId('mobileAiOverlay');
+            if (overlay) {
+                overlay.classList.remove('active');
+            }
+        }
+
+        // Load more functionality
+        function loadMoreCourses() {
+            currentPage++;
+            renderCourses();
+        }
+
+        // Initialize the application
+        function initializeApp() {
+            try {
+                // Load course data
+                COURSES = hydrateFromInlineJson();
+                console.log('Loaded courses:', COURSES.length);
+                
+                // Set initial filtered courses
+                allFilteredCourses = [...COURSES];
+                
+                // Populate filter options
+                populateFilterOptions();
+                
+                // Initial render
+                renderCourses();
+                updateResultCount();
+                updateMarketStats();
+                renderFavoritesBar();
+                renderRecentSection();
+                
+                // Update smart banner
+                updateSmartBanner();
+                setInterval(updateSmartBanner, 10000); // Update every 10 seconds
+                
+                console.log('App initialized successfully');
+            } catch (e) {
+                console.error('Failed to initialize app:', e);
+            }
+        }
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeApp();
+            
+            // Search form
+            const searchForm = byId('searchForm');
+            if (searchForm) {
+                searchForm.addEventListener('submit', applyFilters);
+            }
+            
+            // Search input with debouncing
+            const searchInput = byId('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', debouncedSearch);
+            }
+            
+            // Filter changes
+            ['filterCountry', 'filterCategory', 'filterFormat', 'filterDuration', 'filterRating', 'filterPrice', 'sortBy'].forEach(id => {
+                const element = byId(id);
+                if (element) {
+                    element.addEventListener('change', applyFilters);
+                }
+            });
+            
+            // Mobile filter changes
+            ['mobileFilterCountry', 'mobileFilterCategory', 'mobileFilterFormat', 'mobileFilterPrice', 'mobileSortBy'].forEach(id => {
+                const element = byId(id);
+                if (element) {
+                    element.addEventListener('change', applyFilters);
+                }
+            });
+            
+            // Clear filters
+            const clearFilters = byId('clearFilters');
+            if (clearFilters) {
+                clearFilters.addEventListener('click', () => {
+                    ['filterCountry', 'filterCategory', 'filterFormat', 'filterDuration', 'filterRating', 'filterPrice', 'sortBy'].forEach(id => {
+                        const element = byId(id);
+                        if (element) element.value = '';
+                    });
+                    byId('searchInput').value = '';
+                    applyFilters();
+                });
+            }
+            
+            // Mobile clear filters
+            const mobileClearFilters = byId('mobileClearFilters');
+            if (mobileClearFilters) {
+                mobileClearFilters.addEventListener('click', () => {
+                    ['mobileFilterCountry', 'mobileFilterCategory', 'mobileFilterFormat', 'mobileFilterPrice', 'mobileSortBy'].forEach(id => {
+                        const element = byId(id);
+                        if (element) element.value = '';
+                    });
+                    applyFilters();
+                });
+            }
+            
+            // Mobile menu
+            const mobileMenuToggle = byId('mobileMenuToggle');
+            if (mobileMenuToggle) {
+                mobileMenuToggle.addEventListener('click', openMobileMenu);
+            }
+            
+            const closeMobileMenuBtn = byId('closeMobileMenu');
+            if (closeMobileMenuBtn) {
+                closeMobileMenuBtn.addEventListener('click', closeMobileMenu);
+            }
+            
+            const mobileMenuOverlay = byId('mobileMenuOverlay');
+            if (mobileMenuOverlay) {
+                mobileMenuOverlay.addEventListener('click', closeMobileMenu);
+            }
+            
+            // AI Assistant
+            const aiSend = byId('aiSend');
+            if (aiSend) {
+                aiSend.addEventListener('click', () => sendAIMessage(false));
+            }
+            
+            const aiInput = byId('aiInput');
+            if (aiInput) {
+                aiInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        sendAIMessage(false);
+                    }
+                });
+            }
+            
+            // Mobile AI
+            const mobileAiToggle = byId('mobileAiToggle');
+            if (mobileAiToggle) {
+                mobileAiToggle.addEventListener('click', toggleMobileAI);
+            }
+            
+            const mobileAiSend = byId('mobileAiSend');
+            if (mobileAiSend) {
+                mobileAiSend.addEventListener('click', () => sendAIMessage(true));
+            }
+            
+            const mobileAiInput = byId('mobileAiInput');
+            if (mobileAiInput) {
+                mobileAiInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        sendAIMessage(true);
+                    }
+                });
+            }
+            
+            const closeMobileAiBtn = byId('closeMobileAi');
+            if (closeMobileAiBtn) {
+                closeMobileAiBtn.addEventListener('click', closeMobileAI);
+            }
+            
+            // Load more button
+            const loadMoreBtn = byId('loadMoreBtn');
+            if (loadMoreBtn) {
+                loadMoreBtn.addEventListener('click', loadMoreCourses);
+            }
+            
+            // Quick filter chips
+            document.querySelectorAll('.quick-filter').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    const filter = chip.dataset.filter;
+                    if (filter) {
+                        const searchInput = byId('searchInput');
+                        if (searchInput) {
+                            searchInput.value = filter;
+                            applyFilters();
+                        }
+                    }
+                });
+            });
+            
+            // Trending tags
+            document.querySelectorAll('.trending-tag').forEach(tag => {
+                tag.addEventListener('click', () => {
+                    const search = tag.dataset.search;
+                    if (search) {
+                        const searchInput = byId('searchInput');
+                        if (searchInput) {
+                            searchInput.value = search;
+                            applyFilters();
+                        }
+                    }
+                });
+            });
+            
+            // Clear recent
+            const clearRecentBtn = byId('clearRecent');
+            if (clearRecentBtn) {
+                clearRecentBtn.addEventListener('click', clearRecent);
+            }
+            
+            // Dismiss banner
+            const dismissBanner = byId('dismissBanner');
+            if (dismissBanner) {
+                dismissBanner.addEventListener('click', () => {
+                    byId('smartBanner').style.display = 'none';
+                });
+            }
+            
+            // Close modal on escape
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeModal();
+                    closeMobileAI();
+                }
+            });
+            
+            // Close modal on backdrop click
+            const modal = byId('course-modal');
+            if (modal) {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        closeModal();
+                    }
+                });
+            }
+        });
+
+        // Make functions globally available
+        window.openModal = openModal;
+        window.closeModal = closeModal;
+        window.toggleFavorite = toggleFavorite;
+        window.clearFavorites = clearFavorites;
+        window.clearRecent = clearRecent;
+    </script>
+</body>
+</html>
