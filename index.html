@@ -42,11 +42,11 @@
             background: rgba(0, 0, 0, 0.8);
             z-index: 100;
             display: none;
+            align-items: center;
+            justify-content: center;
         }
         .mobile-ai-overlay.active {
             display: flex;
-            align-items: center;
-            justify-content: center;
         }
         .mobile-ai-content {
             background: white;
@@ -154,25 +154,17 @@
 </head>
 <body class="bg-white text-gray-900 min-h-screen">
     <!-- Header with mobile optimization -->
-    <header class="w-full bg-white text-black py-4 px-4 md:px-8 flex items-center justify-between shadow-md border-b border-gray-200 sticky top-0 z-40">
+    <header class="w-full bg-white text-black py-3 md:py-4 px-4 md:px-8 flex items-center justify-between shadow-md border-b border-gray-200">
         <div class="flex items-center space-x-2 md:space-x-3">
-            <span class="bg-black text-white font-bold px-2 md:px-3 py-1 rounded text-sm md:text-base">Eurolynk</span>
-            <h1 class="text-lg md:text-xl font-bold truncate">Course Search</h1>
+            <span class="bg-black text-white font-bold px-2 md:px-3 py-1 rounded text-xs md:text-base">Eurolynk</span>
+            <h1 class="text-base md:text-xl font-bold truncate">Course Search</h1>
         </div>
-        <div class="flex items-center space-x-2 md:space-x-4 text-xs md:text-sm">
-            <div id="resultCount" class="text-gray-600 hidden md:block"></div>
-            <div class="text-gray-600">
+        <div class="flex items-center space-x-2 md:space-x-4">
+            <div id="resultCount" class="hidden md:block text-xs md:text-sm text-gray-600"></div>
+            <div class="text-xs md:text-sm text-gray-600">
                 <span id="totalUsers" class="font-semibold">2,847</span>
                 <span class="hidden md:inline"> users this week</span>
             </div>
-            <button id="compareToggle" class="hidden bg-blue-600 text-white px-3 py-1 rounded text-xs hover:bg-blue-700 transition-colors">
-                Compare (<span id="compareCount">0</span>)
-            </button>
-            <button id="mobileMenuToggle" class="md:hidden p-2 touch-target">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                </svg>
-            </button>
         </div>
     </header>
 
@@ -180,68 +172,10 @@
     <div id="smartBanner" class="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-200 py-2 md:py-3 px-4 md:px-8">
         <div class="flex items-center justify-between max-w-6xl mx-auto">
             <div class="flex items-center space-x-2 md:space-x-3">
-                <span class="text-blue-700 font-medium text-sm">💡</span>
-                <span id="smartText" class="text-blue-800 text-xs md:text-sm"></span>
+                <span class="text-blue-700 font-medium text-xs md:text-sm">💡</span>
+                <span id="smartText" class="text-blue-800 text-xs md:text-sm leading-tight"></span>
             </div>
-            <button id="dismissBanner" class="text-blue-600 hover:text-blue-800 text-xs md:text-sm touch-target">×</button>
-        </div>
-    </div>
-
-    <!-- Mobile slide-out menu -->
-    <div id="mobileMenu" class="fixed inset-y-0 left-0 w-80 bg-white shadow-xl transform -translate-x-full transition-transform duration-300 z-50 md:hidden">
-        <div class="p-4 border-b border-gray-200">
-            <div class="flex items-center justify-between">
-                <h2 class="text-lg font-semibold">Filters</h2>
-                <button id="closeMobileMenu" class="p-2 touch-target">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-        </div>
-        <div class="p-4 space-y-4 overflow-y-auto" style="height: calc(100vh - 80px);">
-            <select id="mobileFilterCountry" class="w-full p-3 rounded-lg border border-gray-300 bg-white text-gray-800 focus:ring-2 focus:ring-black">
-                <option value="">Any Country</option>
-            </select>
-            <select id="mobileFilterCategory" class="w-full p-3 rounded-lg border border-gray-300 bg-white text-gray-800 focus:ring-2 focus:ring-black">
-                <option value="">Any Category</option>
-            </select>
-            <select id="mobileFilterFormat" class="w-full p-3 rounded-lg border border-gray-300 bg-white text-gray-800 focus:ring-2 focus:ring-black">
-                <option value="">Any Format</option>
-            </select>
-            <select id="mobileFilterPrice" class="w-full p-3 rounded-lg border border-gray-300 bg-white text-gray-800 focus:ring-2 focus:ring-black">
-                <option value="">Any Price</option>
-            </select>
-            <select id="mobileSortBy" class="w-full p-3 rounded-lg border border-gray-300 bg-white text-gray-800 focus:ring-2 focus:ring-black">
-                <option value="relevance">Sort: Relevance</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
-                <option value="popularity">Most Popular</option>
-                <option value="trending">Trending Now</option>
-            </select>
-            <button id="mobileClearFilters" class="w-full p-3 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition touch-target">Clear All Filters</button>
-        </div>
-    </div>
-
-    <!-- Mobile menu overlay -->
-    <div id="mobileMenuOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden md:hidden"></div>
-
-    <!-- Course Comparison Panel -->
-    <div id="comparisonPanel" class="comparison-panel">
-        <div class="h-full flex flex-col">
-            <div class="p-4 border-b bg-gray-50">
-                <div class="flex justify-between items-center">
-                    <h3 class="text-lg font-semibold">Course Comparison</h3>
-                    <button id="closeComparison" class="text-gray-500 hover:text-gray-700">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-            <div id="comparisonContent" class="flex-1 overflow-y-auto p-4">
-                <p class="text-gray-500 text-center py-8">Select courses to compare</p>
-            </div>
+            <button id="dismissBanner" class="text-blue-600 hover:text-blue-800 text-xs md:text-sm flex-shrink-0">×</button>
         </div>
     </div>
 
@@ -249,11 +183,9 @@
         <!-- Search section -->
         <div class="space-y-4 md:space-y-6">
             <form id="searchForm" class="flex items-center space-x-2 md:space-x-3">
-                <div class="relative flex-grow">
-                    <input id="searchInput" type="text" placeholder="Search courses..." class="flex-grow p-3 md:p-4 rounded-lg border border-gray-300 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-black transition text-sm md:text-base w-full"/>
-                    <div id="searchSuggestions" class="search-suggestions hidden"></div>
-                </div>
-                <button type="submit" class="bg-black hover:bg-gray-800 text-white font-semibold px-4 md:px-6 py-3 md:py-4 rounded-lg shadow-md transition touch-target text-sm md:text-base">Search</button>
+                <input id="searchInput" type="text" placeholder="Search for courses, topics, or skills..."
+                       class="flex-grow p-3 md:p-4 rounded-lg border border-gray-300 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-black transition text-sm md:text-base"/>
+                <button type="submit" class="bg-black hover:bg-gray-800 text-white font-semibold px-4 md:px-6 py-3 md:py-4 rounded-lg shadow-md transition text-sm md:text-base">Search</button>
             </form>
 
             <!-- Quick filter chips for mobile -->
@@ -302,7 +234,7 @@
         <section id="recentWrap" class="hidden">
             <div class="flex items-center justify-between mb-2">
                 <div class="text-sm font-semibold text-gray-900">Recently viewed</div>
-                <button id="clearRecent" class="text-xs text-gray-500 hover:text-gray-700 touch-target">Clear</button>
+                <button id="clearRecent" class="text-xs text-gray-500 hover:text-gray-700">Clear</button>
             </div>
             <div id="recentRow" class="flex gap-3 overflow-x-auto no-scrollbar py-1"></div>
         </section>
@@ -312,19 +244,19 @@
             <h3 class="text-base md:text-lg font-semibold text-gray-900 mb-3 md:mb-4">Market Insights</h3>
             <div class="mobile-stats grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
                 <div class="text-center">
-                    <div id="avgPrice" class="text-xl md:text-2xl font-bold text-blue-600">€--</div>
-                    <div class="text-xs text-gray-600">Avg. Price</div>
+                    <div id="avgPrice" class="text-lg md:text-2xl font-bold text-blue-600">€--</div>
+                    <div class="text-xs text-gray-600">Avg. Starting Price</div>
                 </div>
                 <div class="text-center">
-                    <div id="topCountry" class="text-xl md:text-2xl font-bold text-green-600">--</div>
+                    <div id="topCountry" class="text-lg md:text-2xl font-bold text-green-600">--</div>
                     <div class="text-xs text-gray-600">Top Country</div>
                 </div>
                 <div class="text-center">
-                    <div id="budgetOptions" class="text-xl md:text-2xl font-bold text-orange-600">--</div>
+                    <div id="budgetOptions" class="text-lg md:text-2xl font-bold text-orange-600">--</div>
                     <div class="text-xs text-gray-600">Budget Options</div>
                 </div>
                 <div class="text-center">
-                    <div id="onlinePct" class="text-xl md:text-2xl font-bold text-purple-600">--%</div>
+                    <div id="onlinePct" class="text-lg md:text-2xl font-bold text-purple-600">--%</div>
                     <div class="text-xs text-gray-600">Online Available</div>
                 </div>
             </div>
@@ -344,8 +276,8 @@
         <div id="modal-box" class="mobile-modal bg-white text-gray-900 rounded-xl shadow-xl w-full max-w-3xl modal-content-max no-scrollbar mobile-slide-up">
             <div class="p-4 md:p-6 lg:p-8">
                 <div class="flex items-start justify-between">
-                    <h2 id="modal-title" class="text-xl md:text-2xl font-bold pr-4"></h2>
-                    <button onclick="closeModal()" class="text-gray-600 hover:text-black text-2xl leading-none touch-target">&times;</button>
+                    <h2 id="modal-title" class="text-lg md:text-2xl font-bold pr-2"></h2>
+                    <button onclick="closeModal()" class="text-gray-600 hover:text-black text-2xl leading-none min-w-[44px] min-h-[44px] flex items-center justify-center">&times;</button>
                 </div>
                 <div id="modal-meta" class="mt-3"></div>
                 <div id="modal-provider" class="mt-4"></div>
@@ -362,26 +294,26 @@
                 <div class="mt-6 md:mt-8 border-t pt-4 md:pt-6">
                     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                         <div class="flex items-center gap-3">
-                            <h3 class="text-lg font-bold">User Reviews</h3>
+                            <h3 class="text-base md:text-lg font-bold">User Reviews</h3>
                             <div id="reviewsAvg" class="text-sm text-gray-700"></div>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <input id="adminCode" type="password" placeholder="Admin code" class="p-2 rounded border border-gray-300 text-sm"/>
-                            <button id="adminUnlock" class="px-3 py-2 rounded bg-black text-white text-sm touch-target">Unlock delete</button>
+                        <div class="flex flex-col md:flex-row items-start md:items-center gap-2">
+                            <input id="adminCode" type="password" placeholder="Admin code" class="p-2 rounded border border-gray-300 text-sm w-full md:w-auto"/>
+                            <button id="adminUnlock" class="px-3 py-2 rounded bg-black text-white text-sm min-h-[44px] w-full md:w-auto">Unlock delete</button>
                             <span id="adminStatus" class="text-xs text-gray-600 hidden md:inline">Enter code to unlock delete</span>
                         </div>
                     </div>
                     <div id="reviewsList" class="mt-4"></div>
                     <form id="reviewForm" class="mt-6 space-y-3">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                            <input id="revName" type="text" placeholder="Your name (optional)" class="p-3 rounded-lg border border-gray-300 bg-white text-gray-800 focus:ring-2 focus:ring-black"/>
-                            <select id="revRating" class="p-3 rounded-lg border border-gray-300 bg-white text-gray-800 focus:ring-2 focus:ring-black">
+                            <input id="revName" type="text" placeholder="Your name (optional)" class="p-2 md:p-3 rounded-lg border border-gray-300 bg-white text-gray-800 focus:ring-2 focus:ring-black text-sm md:text-base"/>
+                            <select id="revRating" class="p-2 md:p-3 rounded-lg border border-gray-300 bg-white text-gray-800 focus:ring-2 focus:ring-black text-sm md:text-base">
                                 <option value="">Rating</option>
                                 <option>5</option><option>4</option><option>3</option><option>2</option><option>1</option>
                             </select>
-                            <button type="submit" class="bg-black hover:bg-gray-800 text-white font-semibold px-4 py-3 rounded-lg touch-target">Add Review</button>
+                            <button type="submit" class="bg-black hover:bg-gray-800 text-white font-semibold px-4 py-2 md:py-3 rounded-lg text-sm md:text-base min-h-[44px]">Add Review</button>
                         </div>
-                        <textarea id="revText" rows="3" placeholder="Write your review..." class="w-full p-3 rounded-lg border border-gray-300 bg-white text-gray-800 focus:ring-2 focus:ring-black"></textarea>
+                        <textarea id="revText" rows="3" placeholder="Write your review..." class="w-full p-2 md:p-3 rounded-lg border border-gray-300 bg-white text-gray-800 focus:ring-2 focus:ring-black text-sm md:text-base"></textarea>
                     </form>
                 </div>
             </div>
@@ -415,16 +347,16 @@
         <div class="mobile-ai-content">
             <div class="bg-black text-white px-4 py-3 flex items-center justify-between rounded-t-xl">
                 <div class="font-semibold">🤖 AI Course Assistant</div>
-                <button id="closeMobileAi" class="text-white text-xl touch-target">&times;</button>
+                <button id="closeMobileAi" class="text-white text-xl min-w-[44px] min-h-[44px] flex items-center justify-center">&times;</button>
             </div>
             <div id="mobileAiMessages" class="flex-1 p-4 flex flex-col gap-3 overflow-y-auto">
                 <div class="self-start bg-gray-100 text-gray-900 rounded-lg px-3 py-2 text-sm">
-                    Hi! I'm your intelligent course advisor. How can I help you find the perfect course today?
+                    Hi! I'm your intelligent course advisor. I can help you find the perfect course, compare detailed pricing, analyze market trends, or provide personalized recommendations. What would you like to know?
                 </div>
             </div>
             <div class="p-4 border-t border-gray-200 flex gap-2 rounded-b-xl">
                 <input id="mobileAiInput" type="text" placeholder="Ask about courses..." class="flex-1 p-3 border border-gray-300 rounded-lg text-sm"/>
-                <button id="mobileAiSend" class="px-4 py-3 bg-black text-white rounded-lg text-sm hover:bg-gray-800 touch-target">Send</button>
+                <button id="mobileAiSend" class="px-4 py-3 bg-black text-white rounded-lg text-sm hover:bg-gray-800 min-w-[44px] min-h-[44px]">Send</button>
             </div>
         </div>
     </div>
